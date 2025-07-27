@@ -219,6 +219,8 @@ def main(outdir, metric, model_name, device_name, fix=False, framework=None, mod
     models_iter = model_module.get_models_iter(start=point)
     models_ctor = model_module.get_models_ctor(target_config, model_args)
 
+ 
+    max_models_to_process = extra_args.get('run_config', {}).get('max_models_to_measure', None)
     if fix:
         if len(existing) < target_steps:
             print('Will try fixing {} missing measurements between steps 0 and {}'.format(target_steps - len(existing), target_steps))
@@ -247,7 +249,15 @@ def main(outdir, metric, model_name, device_name, fix=False, framework=None, mod
     total_run = 0
     try:
         with device_module.get_runner(metric, target_config, device_args) as runner:
-            for point in models_iter:
+            # for point in models_iter:
+
+
+            for i, point in enumerate(models_iter): # CHANGE THIS LINE
+                if max_models_to_process is not None and i >= max_models_to_process:
+                    print(f"Stopping after processing {max_models_to_process} models as configured in YAML.")
+                    break
+                # The rest of the code inside the loop continues here...
+
                 if fix:
                     if tuple(point) in existing:
                         continue

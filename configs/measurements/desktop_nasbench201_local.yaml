@@ -15,3 +15,6 @@ model:
     input_size: [1,32,32,3]
     data_format: channels_last
     num_classes: 100
+# --- New section for run configuration ---
+run_config:
+  max_models_to_measure: 100 # Chan

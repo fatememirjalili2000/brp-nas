@@ -35,7 +35,11 @@ def disable_warnings():
     except:
         pass
 
-    import tensorflow as tf
+    # import tensorflow as tf
+    
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior()
+
     try:
         tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
     except:
@@ -54,7 +58,10 @@ def save_graph(graph, output_dir):
             graph : tf.Graph to be saved
             output_dir : a directory to which the summary should be written
     '''
-    import tensorflow as tf
+    # import tensorflow as tf
+        
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior()
     with tf.summary.FileWriter(logdir=output_dir, graph=graph) as _:
         pass
 
@@ -74,7 +81,10 @@ def convert_to_graph_def(graph, output, output_file=None, checkpoint=None):
             the graph definition of the converted TF model
     '''
     output = [tensor.name[:-2] for tensor in output]
-    import tensorflow as tf
+    # import tensorflow as tf
+        
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior()
 
     sessconfig = tf.ConfigProto(device_count = {'GPU': 0})
     sessconfig.gpu_options.allow_growth = True
@@ -116,7 +126,10 @@ def convert_to_tflite(graph, inputs, outputs, output_file=None, checkpoint=None,
         Returns:
             the binary form of the converted TFLite model (i.e. the content of the .tflite file)
     '''
-    import tensorflow as tf
+    # import tensorflow as tf
+        
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior()
     sessconfig = tf.ConfigProto(device_count = {'GPU': 0})
     sessconfig.gpu_options.allow_growth = True
     sessconfig.gpu_options.force_gpu_compatible = True
@@ -167,7 +180,10 @@ def convert_to_trt(graph, inputs, outputs, output_file=None, checkpoint=None, qu
         Returns:
             the binary form of the converted TFLite model (i.e. the content of the .tflite file)
     '''
-    import tensorflow as tf
+    # import tensorflow as tf
+        
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior()
     from tensorflow.python.compiler.tensorrt import trt_convert as trt
 
     with tf.Session(graph=graph) as sess:
@@ -211,7 +227,10 @@ def get_flops_and_params(graph, output):
 
     graph_def = convert_to_graph_def(graph, output)
 
-    import tensorflow as tf
+    # import tensorflow as tf
+        
+    import tensorflow.compat.v1 as tf
+    tf.disable_v2_behavior()
     run_meta = tf.RunMetadata()
     with tf.Graph().as_default() as graph_opt:
         tf.import_graph_def(graph_def, name='')

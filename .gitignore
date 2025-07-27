@@ -9,3 +9,70 @@ results*/
 *.pdf
 *.png
 *.pickle
+# IDEs and Editors
+.idea/
+.vscode/
+.DS_Store
+*~
+
+# Python specific
+__pycache__/
+*.pyc
+.mypy_cache/
+.pytest_cache/
+venv/
+env/
+*.egg-info/
+.ipynb_checkpoints/
+.env
+
+# Large files often created during ML development
+# Data files (raw, processed, etc.) - Only ignore if you DON'T want them in Git at all
+# If you want to track them with LFS, DO NOT list them here.
+# data/
+# datasets/
+# *.csv
+# *.tsv
+
+# Model checkpoints and trained models - Only ignore if you DON'T want them in Git at all
+# If you want to track them with LFS, DO NOT list them here.
+# models/
+# checkpoints/
+# *.pt
+# *.pth
+# *.ckpt
+# *.h5
+# *.tf
+# *.onnx
+
+# Experiment logs and results - Often good to ignore if they are very large and regenerated
+logs/
+results/ # اگر پوشه results شامل فایل‌های بزرگ .pickle است و نمی‌خواهید اصلا در گیت باشند، این خط را نگه دارید.
+         # اگر می‌خواهید با LFS مدیریت شوند، این خط را حذف کنید و در Git LFS track کنید.
+outputs/
+runs/
+*.log
+*.txt
+*.jsonl
+
+# NumPy/SciPy specific - Only ignore if you DON'T want them in Git at all
+# If you want to track them with LFS, DO NOT list them here.
+# *.npy
+# *.npz
+
+# Visualization and plotting outputs - Only ignore if they are regenerated
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+
+# Temporary files
+tmp/
+*.tmp
+*.bak
+*.swp
+
+# Database files (if applicable)
+*.db
+*.sqlite3

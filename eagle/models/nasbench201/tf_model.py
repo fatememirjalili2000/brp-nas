@@ -15,11 +15,12 @@
 
 import pathlib
 
-import tensorflow as tf
-
+# import tensorflow as tf
+import tensorflow.compat.v1 as tf
 from . import utils
 from .. import tf_utils
 
+tf.disable_v2_behavior()
 
 def nor_conv_1x1(net, channels, data_format, data_type):
     net = tf.keras.layers.Conv2D(
