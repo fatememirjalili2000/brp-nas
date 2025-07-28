@@ -52,53 +52,42 @@ def get_predictor(predictor_name, predictor_args=None, checkpoint=None, ignore_l
     return predictor
 
 #############my injection 
-
-# File: C:\Users\AsreRayaneh\Desktop\unit\proj\code\brp-nas\eagle\predictors\infer.py
-
-# ... (کدهای موجود قبل از prepare_tensors، مانند import ها و get_predictor) ...
-
 def prepare_tensors(gs, targets, model_module, binary_classifier, normalize, augments=None):
     adjacency_list = []
     features_list = []
+    
+    augments_tensor_list = [] if augments else None 
 
-    augments_tensor_list = [] if augments else None # مقداردهی اولیه به صورت لیست برای جمع‌آوری
-
-    for g_item in gs: # `g_item` در اینجا یک arch_vector (مثلا (0,0,0,0,0,0)) است.
-        # اگر binary_classifier فعال است، `g_item` خودش یک `pair` از arch_vectors است
+    for g_item in gs: 
         if binary_classifier: 
             pair_adj, pair_feat = [], []
             pair_aug = []
-            for sub_g in g_item: # هر sub_g یک arch_vector است
+            for sub_g in g_item: 
                 matrix, labels = model_module.get_matrix_and_ops(sub_g, prune=True, keep_dims=True)
                 adj_np, feat_np = model_module.get_adjacency_and_features(matrix, labels)
-                pair_adj.append(torch.tensor(adj_np, dtype=torch.double).cuda())
-                pair_feat.append(torch.tensor(feat_np, dtype=torch.double).cuda())
+                pair_adj.append(torch.tensor(adj_np, dtype=torch.double))
+                pair_feat.append(torch.tensor(feat_np, dtype=torch.double))
                 if augments:
                     augs_single_model = [adict[sub_g] for adict in augments]
-                    pair_aug.append(torch.tensor(augs_single_model, dtype=torch.double).cuda())
-            adjacency_list.append(torch.stack(pair_adj)) # Stack two adj tensors for binary classifier
-            features_list.append(torch.stack(pair_feat)) # Stack two feat tensors for binary classifier
+                    pair_aug.append(torch.tensor(augs_single_model, dtype=torch.double))
+            adjacency_list.append(torch.stack(pair_adj))
+            features_list.append(torch.stack(pair_feat))
             if augments:
                 augments_tensor_list.append(torch.stack(pair_aug))
-        else: # برای مدل‌های رگرسیون (که شما از آن استفاده می‌کنید)
-            # `g_item` در اینجا مستقیماً `arch_vector` است.
+        else: 
             matrix, labels = model_module.get_matrix_and_ops(g_item, prune=True, keep_dims=True)
             adj_np, feat_np = model_module.get_adjacency_and_features(matrix, labels)
 
-            # تبدیل NumPy array / list به PyTorch Tensor
-            # و انتقال به GPU (cuda()) و تنظیم دقت به double()
-            adjacency_list.append(torch.tensor(adj_np, dtype=torch.double).cuda())
-            features_list.append(torch.tensor(feat_np, dtype=torch.double).cuda())
+            adjacency_list.append(torch.tensor(adj_np, dtype=torch.double))
+            features_list.append(torch.tensor(feat_np, dtype=torch.double))
 
             if augments:
                 augs_single_model = [adict[g_item] for adict in augments]
-                augments_tensor_list.append(torch.tensor(augs_single_model, dtype=torch.double).cuda())
+                augments_tensor_list.append(torch.tensor(augs_single_model, dtype=torch.double))
 
-    # حالا batch از تنسورها را می‌سازیم. torch.stack به درستی تنسورها را روی هم انباشته می‌کند.
     adjacency_batch = torch.stack(adjacency_list)
     features_batch = torch.stack(features_list)
-
-    # پردازش Targets (latencies)
+    
     targets_tensor = None
     if targets is not None:
         targets_processed = []
@@ -112,21 +101,18 @@ def prepare_tensors(gs, targets, model_module, binary_classifier, normalize, aug
                     max_target = max([max(pair) for pair in targets])
                     min_target = min([min(pair) for pair in targets])
                     targets_processed = [[(t - min_target) / (max_target - min_target) for t in pair] for pair in targets]
-                else: # Assuming this branch is for KLDivLoss, which needs normalized probabilities
-                    # استفاده از np.sum به جای sum() که ممکن است در لیست‌های تودرتو مشکل ساز باشد
+                else:
                     targets_processed = [np.array(pair) / np.sum(np.array(pair)).tolist() for pair in targets] 
         else:
             targets_processed = [[t] for t in targets]
-
-        targets_tensor = torch.tensor(targets_processed, dtype=torch.double).cuda() # تبدیل targets به Tensor و انتقال به GPU
-
-    # اگر augments_tensor_list وجود دارد و خالی نیست
+        
+        targets_tensor = torch.tensor(targets_processed, dtype=torch.double)
+    
     augments_final_tensor = None
-    if augments and augments_tensor_list: # فقط در صورتی stack کن که augments_tensor_list پر باشد
+    if augments and augments_tensor_list:
         augments_final_tensor = torch.stack(augments_tensor_list)
 
     return adjacency_batch, features_batch, targets_tensor, augments_final_tensor
-
 ################ injeciton ended
 # def prepare_tensors(gs, targets, model_module, binary_classifier, normalize, augments=None):
 #     adjacency_batch, features_batch = [], []
