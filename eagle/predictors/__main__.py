@@ -869,7 +869,8 @@ def train(training_set,
         raise ValueError(f'Unknown optimizer: {optim_name}')
 
     if lr_scheduler == 'plateau':
-        scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=lr_patience, threshold=0.01, verbose=True)
+        # scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=lr_patience, threshold=0.01, verbose=True)
+        scheduler = optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.5, patience=lr_patience, threshold=0.01)
     elif lr_scheduler == 'cosine':
         scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=epochs, eta_min=0.0)
     else:
@@ -1291,46 +1292,198 @@ if __name__ == '__main__':
             else:
                 augments = None
 
-### injected code
-        def get_dataset_subset(dataset, subset_name):
-            if isinstance(subset_name, str):
-                subset_name = [subset_name]
-            result = []
-            for k in dataset.keys():
-                if any([k.startswith(n) for n in subset_name]):
-                    result.append(dataset[k])
-            return result
+# ### injected code
+#         def get_dataset_subset(dataset, subset_name):
+#             if isinstance(subset_name, str):
+#                 subset_name = [subset_name]
+#             result = []
+#             for k in dataset.keys():
+#                 if any([k.startswith(n) for n in subset_name]):
+#                     result.append(dataset[k])
+#             return result
 
-        def transform_to_pairs(triplets):
-            return [[[t[0], t[1]], t[2]] for t in triplets]
+#         def transform_to_pairs(triplets):
+#             return [[[t[0], t[1]], t[2]] for t in triplets]
 
-        class DummyDataset:
-            def __init__(self, train_set, valid_set, full_dataset):
-                train_features = torch.cat([sample[0][1] for sample in train_set]).numpy()
-                from sklearn.preprocessing import StandardScaler
-                transformer = StandardScaler().fit(train_features)
-                for dataset in [train_set, valid_set, full_dataset]:
-                    for x, _ in dataset:
-                        x[1] = torch.tensor(transformer.transform(x[1].numpy()))
-                self.train_set = train_set
-                self.valid_set = valid_set
-                self.full_dataset = full_dataset
-                self.valid_pts = None
+#         class DummyDataset:
+#             def __init__(self, train_set, valid_set, full_dataset):
+#                 train_features = torch.cat([sample[0][1] for sample in train_set]).numpy()
+#                 from sklearn.preprocessing import StandardScaler
+#                 transformer = StandardScaler().fit(train_features)
+#                 for dataset in [train_set, valid_set, full_dataset]:
+#                     for x, _ in dataset:
+#                         x[1] = torch.tensor(transformer.transform(x[1].numpy()))
+#                 self.train_set = train_set
+#                 self.valid_set = valid_set
+#                 self.full_dataset = full_dataset
+#                 self.valid_pts = None
 
-        import random
-        all_types = ['alex', 'mobilenetv1', 'vgg', 'mobilenetv2', 'nasbench201']
-        assert args.leave_one_out in all_types
-        train_types = [t for t in all_types if t != args.leave_one_out]
-        test_type = args.leave_one_out
-        dataset = pickle.load(open(args.dataset_path, 'rb'))
-        train_plus_valid = transform_to_pairs(get_dataset_subset(dataset, train_types))
-        train_set = random.sample(train_plus_valid, 2000)
-        train_set, valid_set = train_set[:1500], train_set[1500:]
-        test_set = transform_to_pairs(get_dataset_subset(dataset, test_type))
-        dataset = DummyDataset(train_set, valid_set, test_set)
+#         import random
+#         all_types = ['alex', 'mobilenetv1', 'vgg', 'mobilenetv2', 'nasbench201']
+#         assert args.leave_one_out in all_types
+#         train_types = [t for t in all_types if t != args.leave_one_out]
+#         test_type = args.leave_one_out
+#         dataset = pickle.load(open(args.dataset_path, 'rb'))
+#         train_plus_valid = transform_to_pairs(get_dataset_subset(dataset, train_types))
+#         train_set = random.sample(train_plus_valid, 2000)
+#         train_set, valid_set = train_set[:1500], train_set[1500:]
+#         test_set = transform_to_pairs(get_dataset_subset(dataset, test_type))
+#         dataset = DummyDataset(train_set, valid_set, test_set)
 
-### end of injection
+# ### end of injection
 
+# ### injected code START ###
+#         def get_dataset_subset(dataset, subset_name):
+#             """
+#             فیلتر کردن دیتاست بر اساس نام زیرمجموعه.
+#             فرض بر این است که کلیدهای دیتاست تاپل‌هایی هستند که
+#             اولین عنصر آن‌ها نام مدل (مثلاً 'alex', 'mobilenetv1') است.
+#             """
+#             if isinstance(subset_name, str):
+#                 subset_name = [subset_name] # تبدیل به لیست برای سازگاری با any()
+#             result = []
+#             for k in dataset.keys():
+#                 # *** اصلاح کلیدی: k[0].startswith(n) بجای k.startswith(n) ***
+#                 # این کار فرض می‌کند که k یک تاپل است و k[0] یک رشته است.
+#                 if isinstance(k, tuple) and k: # اطمینان از اینکه k یک تاپل غیر خالی است
+#                     if any([k[0].startswith(n) for n in subset_name]):
+#                         result.append(dataset[k])
+#                 # در غیر این صورت، اگر k تاپل نباشد یا خالی باشد، آن را نادیده می‌گیریم.
+#                 # می‌توانید اینجا یک warning اضافه کنید اگر انتظار ندارید کلیدها تاپل نباشند.
+#                 # else:
+#                 #     print(f"Warning: Unexpected key type or empty tuple: {k} (type: {type(k)})")
+#             return result
+        
+#         def transform_to_pairs(triplets):
+#             """
+#             تبدیل فرمت داده‌ها از سه‌تایی (triplets) به زوج (pairs) مورد نیاز مدل.
+#             انتظار می‌رود هر triplet به فرمت [graph_adjacency, graph_features, latency] باشد.
+#             """
+#             # اطمینان حاصل می‌کنیم که triplet[0] و triplet[1] با هم به عنوان ورودی مدل
+#             # و triplet[2] به عنوان برچسب (latency) استفاده شوند.
+#             return [[[t[0], t[1]], t[2]] for t in triplets]
+        
+        
+#         class DummyDataset:
+#             """
+#             کلاس کمکی برای آماده‌سازی و پیش‌پردازش (نرمال‌سازی) ویژگی‌های دیتاست.
+#             """
+#             def __init__(self, train_set, valid_set, full_dataset):
+#                 # 1. استخراج ویژگی‌ها از train_set برای Scale کردن
+#                 all_train_features = []
+#                 for sample in train_set:
+#                     # مطمئن می‌شویم که sample و sample[0] و sample[0][1] وجود دارند
+#                     if sample and len(sample) > 0 and len(sample[0]) > 1 and isinstance(sample[0][1], torch.Tensor):
+#                         all_train_features.append(sample[0][1])
+#                     # else:
+#                     #     print(f"Warning: Malformed sample in train_set: {sample}")
+        
+#                 if not all_train_features:
+#                     raise ValueError("No valid feature tensors found in train_set for StandardScaler fitting. Check data format or ensure train_set is not empty.")
+        
+#                 # Concatenate کردن همه تنسورها و تبدیل به numpy
+#                 train_features = torch.cat(all_train_features).numpy()
+        
+#                 # 2. آموزش StandardScaler
+#                 from sklearn.preprocessing import StandardScaler
+#                 transformer = StandardScaler().fit(train_features)
+        
+#                 # 3. اعمال StandardScaler به تمام دیتاست‌ها
+#                 for dataset_subset in [train_set, valid_set, full_dataset]:
+#                     for i, (x, y) in enumerate(dataset_subset): # از enumerate برای دسترسی به اندیس استفاده می‌کنیم
+#                         # اطمینان از اینکه x[1] یک تنسور است و قابل تبدیل به NumPy
+#                         if isinstance(x[1], torch.Tensor):
+#                             # تبدیل x[1] به NumPy، اعمال transform، سپس تبدیل به تنسور double
+#                             # و بروزرسانی عنصر اصلی در لیست
+#                             dataset_subset[i][0][1] = torch.tensor(transformer.transform(x[1].numpy()), dtype=torch.double)
+#                         else:
+#                             # این بخش برای اشکال‌زدایی است اگر x[1] تنسور نباشد
+#                             print(f"Warning: x[1] is not a torch.Tensor. Type: {type(x[1])}. Attempting conversion...")
+#                             # تلاش برای تبدیل به numpy array حتی اگر تنسور نباشد
+#                             dataset_subset[i][0][1] = torch.tensor(transformer.transform(np.array(x[1])), dtype=torch.double)
+                
+#                 # ذخیره دیتاست‌های پردازش شده
+#                 self.train_set = train_set
+#                 self.valid_set = valid_set
+#                 self.full_dataset = full_dataset
+#                 self.valid_pts = None # این ممکن است بعداً در جای دیگری مقداردهی شود.
+        
+#         import random
+#         # تعریف تمام انواع مدل‌های پشتیبانی شده
+#         all_types = ['alex', 'mobilenetv1', 'vgg', 'mobilenetv2', 'nasbench201']
+#         # بررسی می‌کند که مقدار --leave_one_out در آرگومان‌ها معتبر باشد
+#         assert args.leave_one_out in all_types, f"--leave_one_out value '{args.leave_one_out}' is not in allowed types: {all_types}"
+        
+#         # تعیین انواع مدل برای آموزش (همه به جز نوع leave-one-out)
+#         train_types = [t for t in all_types if t != args.leave_one_out]
+#         # تعیین نوع مدل برای تست (همان نوع leave-one-out)
+#         test_type = args.leave_one_out
+        
+#         # بارگذاری دیتاست کامل از فایل pickle
+#         # dataset = pickle.load(open(args.dataset_path, 'rb'))
+#         # نکته: اگر `args.measurement` و `args.dataset_path` هر دو به یک فایل اشاره دارند،
+#         # و فایل `desktop-cpu-core-i7-7820x.pickle` شامل دیتاست کلی است،
+#         # این خط برای بارگذاری داده‌های خام مناسب است.
+#         # با توجه به ساختار پروژه، `dataset_mod.EagleDataset`
+#         # قبلاً در بخش‌های بالایی (در `if args.model == 'darts': else:` )
+#         # `dataset` را مقداردهی کرده است.
+#         # باید اطمینان حاصل کنید که `dataset` در اینجا یک دیکشنری است
+#         # که شامل تمام داده‌ها با کلیدهای تاپل مانند است.
+#         # اگر `dataset` از نوع `EagleDataset` یا `DartsDataset` است،
+#         # ممکن است نیاز به دسترسی به `dataset.dataset` (اگر دیکشنری داخلی دارد) داشته باشید.
+#         # برای ایمنی، فرض می‌کنیم `dataset` اینجا یک دیکشنری است که از pickle لود شده است.
+        
+#         # این خطوط به نظر می‌رسد جایگزین روش بارگذاری دیتاست اصلی پروژه می‌شوند
+#         # یا داده‌ها را برای یک سناریوی خاص (Leave-One-Out) از یک فایل جداگانه بارگذاری می‌کنند.
+#         # بسیار مهم است که `dataset` بارگذاری شده در اینجا واقعاً یک دیکشنری با کلیدهای تاپل باشد.
+#         try:
+#             with open(args.dataset_path, 'rb') as f:
+#                 loaded_dataset_raw = pickle.load(f)
+#             # اگر loaded_dataset_raw یک دیکشنری است:
+#             if isinstance(loaded_dataset_raw, dict):
+#                 dataset_for_subsetting = loaded_dataset_raw
+#             else:
+#                 # اگر نوع دیگری است، ممکن است نیاز به دسترسی به attribute خاصی باشد
+#                 # مثلاً اگر یک آبجکت EagleDataset باشد و داده‌های خامش در `.dataset` ذخیره شده باشند.
+#                 # این بخش نیاز به بررسی دقیق ساختار `loaded_dataset_raw` دارد.
+#                 # فعلاً فرض می‌کنیم مستقیم دیکشنری است.
+#                 raise TypeError(f"Expected dataset from {args.dataset_path} to be a dict, but got {type(loaded_dataset_raw)}")
+        
+#         except Exception as e:
+#             print(f"Error loading dataset from {args.dataset_path}: {e}")
+#             # اگر مطمئن هستید که `dataset` از قبل توسط `EagleDataset` بارگذاری شده و
+#             # دارای متد `keys()` است که تاپل برمی‌گرداند،
+#             # می‌توانید `dataset_for_subsetting = dataset` را استفاده کنید.
+#             # ولی با توجه به اینکه شما `pickle.load` را اینجا قرار داده‌اید،
+#             # به نظر می‌رسد قصد دارید دیتاست جدیدی بارگذاری کنید.
+#             raise
+        
+        
+#         # گرفتن زیرمجموعه‌های آموزش و تست بر اساس 'leave-one-out'
+#         train_plus_valid = transform_to_pairs(get_dataset_subset(dataset_for_subsetting, train_types))
+#         test_set = transform_to_pairs(get_dataset_subset(dataset_for_subsetting, test_type))
+        
+        
+#         # تقسیم train_plus_valid به train_set و valid_set
+#         # اطمینان حاصل می‌کنیم که train_plus_valid به اندازه کافی بزرگ باشد.
+#         if len(train_plus_valid) < 2000:
+#             print(f"Warning: train_plus_valid has only {len(train_plus_valid)} samples, less than 2000 required for random.sample. Using all available samples.")
+#             sampled_train_plus_valid = list(train_plus_valid) # Convert to list to ensure it's mutable for sampling
+#         elif len(train_plus_valid) > 2000:
+#             sampled_train_plus_valid = random.sample(train_plus_valid, 2000)
+#         else:
+#             sampled_train_plus_valid = train_plus_valid # If exactly 2000, use as is
+        
+#         # تقسیم به 1500 برای آموزش و بقیه برای اعتبارسنجی
+#         train_set = sampled_train_plus_valid[:1500]
+#         valid_set = sampled_train_plus_valid[1500:]
+        
+#         # ایجاد آبجکت DummyDataset با مجموعه‌های آماده شده
+#         dataset = DummyDataset(train_set, valid_set, test_set)
+        
+#         ### end of injected code END ###
+        
+        
 
         explored_models = dataset.train_set
         if not args.eval:
