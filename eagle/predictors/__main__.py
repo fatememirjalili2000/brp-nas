@@ -196,8 +196,8 @@ def train(training_set,
         else:
             val_loss = train_loss
 
-        if torch.cuda.is_available():
-            val_loss = val_loss.cpu()
+        # if torch.cuda.is_available():
+        #     val_loss = val_loss.cpu()
 
         if lowest_loss is None or val_loss < lowest_loss:
             lowest_loss = val_loss
@@ -375,7 +375,7 @@ def predict(testing_data,
             test_data_with_indices = [(*v, idx) for idx, v in enumerate(testing_data)]
             sorted_values = sorted(test_data_with_indices, key=functools.cmp_to_key(predictor_compare))
             sorted_values = { pt: (gt,idx) for idx,(pt,gt,_) in enumerate(sorted_values) }
-            predictor.cuda()
+            # predictor.cuda()
         else:
             sorted_values = sorted(testing_data, key=functools.cmp_to_key(predictor_compare))
             sorted_values = { pt: (gt,idx) for idx,(pt,gt) in enumerate(sorted_values) }
@@ -482,11 +482,11 @@ if __name__ == '__main__':
             lat_predictor_args.pop('binary_classifier')
             lat_predictor = infer.get_predictor(args.predictor, predictor_args=lat_predictor_args, checkpoint=args.load, ignore_last=False)
 
-        if args.predictor != 'random':
-            if torch.cuda.is_available():
-                predictor.cuda()
-                if lat_predictor:
-                    lat_predictor.cuda()
+        # if args.predictor != 'random':
+        #     if torch.cuda.is_available():
+        #         predictor.cuda()
+        #         if lat_predictor:
+        #             lat_predictor.cuda()
             # else:
                 # raise RuntimeError('No GPU!')
 
