@@ -18,9 +18,9 @@ training:
   lr_scheduler: plateau
 
 dataset:
-  total_points: 152
-  training_points: 90
-  validation_points: 10
+  total_points: 15000
+  training_points: 900
+  validation_points: 100
   sampling_method: "random"
   sampling_seed: 0
 # dataset:
