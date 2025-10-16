@@ -19,7 +19,7 @@ import torch
 import torch.optim as optim
 
 # -------------------- CONFIG --------------------
-PICKLE_DATASET = "results/desktop-cpu-core-i7-7820x.pickle"
+PICKLE_DATASET = "../../../results/desktop-cpu-core-i7-7820x.pickle"
 USE_TOTAL = 1520
 TRAIN_N = 900
 VAL_N = 1
