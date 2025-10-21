@@ -17,17 +17,15 @@ training:
   optim_name: adamw
   lr_scheduler: plateau
 
+# dataset:
+#   total_points: 1520
+#   training_points: 900
+#   validation_points: 1
+#   sampling_method: "random"
+#   sampling_seed: !!null
 dataset:
-  total_points: 1520
+  total_points: 15284
   training_points: 900
-  validation_points: 1
+  validation_points: 100
   sampling_method: "random"
   sampling_seed: !!null
-    # dataset:
-    #     total_points: 15284
-    #     training_points: 900
-    #     validation_points: 100
-    #     sampling_method: 'random'
-    #     sampling_seed: !!null
-
-
